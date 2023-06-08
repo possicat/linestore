@@ -1,0 +1,18 @@
+{
+  
+  "numbers": {
+    "displayImg": "https://....",
+    "router": "GET: api/products/numbers"
+  },
+  
+  "fucker": {
+    "displayImg": "https://....",
+    "router": "GET: api/products/fucker"
+  },
+  
+  "showTrade": {
+    "displayImg": "https://....",
+    "router": "GET: api/products/show-trade"
+  }
+  
+}
