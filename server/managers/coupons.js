@@ -92,6 +92,8 @@ const deleteCoupon = (req, res) => {
 
     return new Promise(async (resolve, reject) => {
 
+        const { success, warnings } = locale.get("coupons");
+
         const code = req.params.coupon_code;
 
         if (typeof code != "string" || !code.trim().length) return reject({ coupon: warnings.requiredCouponCode });
@@ -99,7 +101,7 @@ const deleteCoupon = (req, res) => {
         const coupon = await Coupon.findOne({ code });
         if (!coupon) return reject({ coupon: warnings.invalidCouponCode });
 
-        await coupon.remove();
+        await Coupon.deleteOne({ _id: coupon._id });
 
         return resolve(true);
 

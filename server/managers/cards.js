@@ -13,7 +13,7 @@ const createCard = (req, res) => {
     
     try {
       const { code, codeHint, serialNumber } = await Card.generateUniqueCard(Card);
-      const card = await Card.create({ serialNumber, code, codeHint, balance, createdBy: user._id, active: (!!active), ownedBy: ((!!active) ? user._id : null) });
+      const card = await Card.create({ serialNumber, code, codeHint, balance, createdBy: user._id, active: (!!active), ownedBy: ((!!active) ? user._id : undefined) });
       const cardInfo = { serialNumber, code, balance, createdBy: card.createdBy, active: card.active };
       
       return resolve(cardInfo);
@@ -255,7 +255,7 @@ const deleteCard = (req, res) => {
     if (card.active) return reject({ card: warnings.deleteActivatedCard });
     
     try {
-      await card.remove();
+      await Card.deleteOne({ _id: card._id });
       return resolve(true);
     } catch {
       reject({ server: warnings.server });

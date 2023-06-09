@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const ObjectId = mongoose.Schema.ObjectId;
+const ObjectId = mongoose.Types.ObjectId;
 const locale = require('../../locales/index');
 //
 

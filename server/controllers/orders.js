@@ -40,6 +40,8 @@ const getMyOrders = (req, res) => {
 
 const getOrder = (req, res) => {
 
+    const { success, warnings } = locale.get("orders");
+
     OrdersManager.getOrder(req, res).then(order => {
         return res.status(200).json({
             message: success.fetched,

@@ -6,7 +6,7 @@ const couponsController = require('../controllers/coupons');
 router.get('/', authMiddlewares.isAdmin, couponsController.getCoupons);
 router.post('/create', couponsController.createCoupon);
 router.post('/re-create', couponsController.reCreateCoupon);
-router.post('/check', couponsController.reCreateCoupon);
+router.post('/check', couponsController.checkCoupon);
 router.delete('/:coupon_code', couponsController.deleteCoupon);
 
 module.exports = router;

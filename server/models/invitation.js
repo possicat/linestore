@@ -29,7 +29,7 @@ invitationSchema.statics.generateUniqueInviteCode = async (model) => {
     let code;
     do {
         code = generateUniqueId({ length: 6, useLetters: true }).toString();
-    } while (!(await model.findOne({ code })));
+    } while ((await model.findOne({ code })));
 
     return code.trim();
 

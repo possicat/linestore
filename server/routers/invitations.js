@@ -6,6 +6,6 @@ const invitationsController = require('../controllers/invitations');
 router.get('/', authMiddlewares.isAdmin, invitationsController.getInvitations);
 router.post('/create', invitationsController.createInvitation);
 router.post('/re-create', invitationsController.reCreateInvitationCode);
-router.post('/use', invitationsController.useInvitationCode);
+router.get('/use', invitationsController.useInvitationCode);
 
 module.exports = router;

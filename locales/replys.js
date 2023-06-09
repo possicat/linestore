@@ -126,6 +126,7 @@ module.exports = {
       server: generalServerError,
       requiredInvitationCode: `requiredInvitationCode`,
       invalidInvitationCode: `invalidInvitationCode`,
+      useOwnInviteCode: `useOwnInviteCode`,
       alredyUseInviteCode: `alredyUseInviteCode`
     }
   },

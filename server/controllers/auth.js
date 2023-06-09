@@ -77,9 +77,10 @@ const forgotPassword = (req, res) => {
   
   const { success, warnings } = locale.get("auth");
   
-  AuthManager.forgotAccountPassword(req, res).then(() => {
+  AuthManager.forgotAccountPassword(req, res).then(resetToken => {
     return res.status(200).json({
       message: success.forgotPassword,
+      resetToken
     });
   }).catch(errors => {
     return res.status(400).json({
@@ -94,7 +95,7 @@ const resetPassword = (req, res) => {
   
   const { success, warnings } = locale.get("auth");
   
-  AuthManager.resetAccountPassword(req, res).then((resetToken) => {
+  AuthManager.resetAccountPassword(req, res).then(resetToken => {
     
     if (req.method == 'GET') {
       return res.status(200).render('reset-password', { resetToken });

@@ -213,7 +213,7 @@ const cancelNumberOrder = (req, res) => {
       user.purchases.filter(e => e.toString() != orderId.toString());
 
       await user.save({ validateBeforeSave: false });
-      await order.remove();
+      await Order.deleteOne({ _id: order._id });
 
       return resolve({
         orderId,

@@ -156,7 +156,7 @@ const changeUserAccountPassword = (req, res) => {
       return resolve(true);
     } catch (err) {
       if (err.errors.password) {
-        err.errors.password.message = err.errors.password.message.replace(/password/g, "newPassword");
+        err.errors.password.message = err.errors.password.message.replace(/Password/g, "NewPassword").replace(/password/g, "NewPassword");
         err.errors.newPassword = err.errors.password;
         delete err.errors.password;
       }
@@ -288,7 +288,7 @@ const deleteUserAccount = (req, res) => {
     if (user.permissions.includes("admin")) return reject({ user: warnings.deleteAdmins });
     
     try {
-      await user.remove();
+      await User.deleteOne({ _id: user._id });
       return resolve(true);
     } catch {
       reject({ server: warnings.server });

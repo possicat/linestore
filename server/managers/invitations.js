@@ -42,12 +42,12 @@ const reCreateInvitationCode = (req, res) => {
 
         const user = req.user;
 
-        const code = await Invitation.generateUniqueInvite(Invitation);
         let invitation = await Invitation.findOne({ inviterId: user._id });
 
         if (!invitation) {
             invitation = await createInvitation(req, res);
         } else {
+            const code = await Invitation.generateUniqueInviteCode(Invitation);
             invitation.code = code;
             await invitation.save();
         }
@@ -71,10 +71,14 @@ const useInvitationCode = (req, res) => {
 
         const invitation = await Invitation.findOne({ code: (typeof code == "string" && code.trim().length) ? code.trim() : null });
         if (!invitation) return reject({ code: warnings.invalidInvitationCode });
+        if (invitation.inviterId.toString() == user._id.toString()) return reject({ user: warnings.useOwnInviteCode });
         if (user.invitedBy) return reject({ user: warnings.alredyUseInviteCode });
 
         user.invitedBy = invitation.inviterId;
         invitation.uses.push(user._id);
+
+        await user.save({ validateBeforeSave: false });
+        await invitation.save({ validateBeforeSave: false });
 
         return resolve(true);
     });

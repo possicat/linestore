@@ -81,7 +81,7 @@ const verificationAccount = async (req, res) => {
     
     const verificationCode = generateUniqueId({ length: 6, useLetters: false }).toString();
     const verificationData = { email: user.email, verificationCode };
-    const verificationToken = jwt.sign(verificationData, process.env.VERIFY_SECRET, { expiresIn: "6h" });
+    const verificationToken = jwt.sign(verificationData, process.env.VERIFY_SECRET, { expiresIn: "15m" });
     
     Mailer.setMessage({
       template: (req.body.byCode) ? "verification-code" : "verification-link",
@@ -116,7 +116,7 @@ const verifyAccount = (req, res) => {
         if (user.verified) return reject({ verify: warnings.alreadyVerified });
         if (typeof verificationCode != "string" || !verificationCode.length) return reject({ verificationCode: warnings.requiredVerificationCode });
         if (verificationCode != decodedData.verificationCode) return reject({ verificationCode: warnings.invalidVerificationCode });
-        
+
         user.verified = true;
         await user.save({ validateBeforeSave: false });
         
@@ -146,18 +146,18 @@ const forgotAccountPassword = (req, res) => {
     if (!user) return reject({ email: warnings.notFoundEmail });
     
     const resetData = { email: user.email, password: user.password };
-    const resetToken = jwt.sign(resetData, process.env.RESET_PASSWORD_SECRET, { expiresIn: "6h" });
+    const resetToken = jwt.sign(resetData, process.env.RESET_PASSWORD_SECRET, { expiresIn: "15m" });
     
     Mailer.setMessage({
       template: "reset-password",
       title: "Reset Password",
       content: {
-        link: `${process.env.HOST}/api/auth/reset-password?token=${resetToken}`,
+        link: `${process.env.HOST}/api/auth/reset-password?token=${resetToken}`
       }
     });
     Mailer.send(user.email).catch(e => 400);
     
-    return resolve(true);
+    return resolve(resetToken);
     
   });
   
@@ -170,6 +170,7 @@ const resetAccountPassword = (req, res) => {
     const { success, warnings } = locale.get("auth");
     
     const resetToken = req.query.token;
+    const resetCode = req.query.code;
     
     jwt.verify(resetToken, process.env.RESET_PASSWORD_SECRET, async function (err, decodedData) {
       if (err) return reject({ resetToken: warnings.invalidResetToken });
@@ -177,7 +178,7 @@ const resetAccountPassword = (req, res) => {
       try {
         const user = await User.findOne({ email: decodedData.email });
         
-        if (user.password != decodedData.password) return reject({ resetToken: warnings.invalidResetToken });;
+        if (user.password != decodedData.password) return reject({ resetToken: warnings.invalidResetToken });
         
         if (req.method == 'POST') {
           
@@ -213,6 +214,11 @@ const resetAccountPassword = (req, res) => {
   
 };
 
+function isUsername (username)  {
+	const usernameFormat = username.match(/[^A-z\d._]/g) || '';
+	const isGood = (usernameFormat.length > 0) ? false : true;
+  return isGood && (username.length >= 3 && username.length <= 16);
+}
 
 const isAvailableUsername = (req, res) => {
   
@@ -224,8 +230,8 @@ const isAvailableUsername = (req, res) => {
 
     if (typeof username != "string" || !username.trim().length) return reject({ username: warnings.requiredUsername });
 
-    const user = User.findOne({ username: username.toLowerCase().trim() });
-    if (!user) return resolve(true);
+    const user = await User.findOne({ username: username.toLowerCase().trim() });
+    if (!user && isUsername(username)) return resolve(true);
     return resolve(false);
 
   });

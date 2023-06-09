@@ -40,6 +40,8 @@ const createInvitation = (req, res) => {
 
 const reCreateInvitationCode = (req, res) => {
 
+  const { success, warnings } = locale.get("invitations");
+
   InvitationsManager.reCreateInvitationCode(req, res).then(code => {
     return res.status(200).json({
       message: success.recreated,
@@ -55,6 +57,8 @@ const reCreateInvitationCode = (req, res) => {
 };
 
 const useInvitationCode = (req, res) => {
+
+  const { success, warnings } = locale.get("invitations");
 
   InvitationsManager.useInvitationCode(req, res).then(() => {
     return res.status(200).json({
