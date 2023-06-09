@@ -2,14 +2,50 @@ const InvitationsManager = require('../managers/invitations');
 const locale = require('../../locales/index');
 //
 
+const getInvitation = (req, res) => {
+
+  const { success, warnings } = locale.get("invitations");
+
+  InvitationsManager.getInvitationInfo(req, res).then(invitationInfo => {
+    return res.status(200).json({
+      message: success.fetched,
+      invitationInfo
+    });
+  }).catch(errors => {
+    return res.status(400).json({
+      message: warnings.general,
+      reason: Object.values(errors)[0]
+    });
+  });
+
+};
+
+const getMyInvitation = (req, res) => {
+
+  const { success, warnings } = locale.get("invitations");
+
+  InvitationsManager.getMyInvitationInfo(req, res).then(invitationInfo => {
+    return res.status(200).json({
+      message: success.fetched,
+      invitationInfo
+    });
+  }).catch(errors => {
+    return res.status(400).json({
+      message: warnings.general,
+      reason: Object.values(errors)[0]
+    });
+  });
+
+};
+
 const getInvitations = (req, res) => {
 
   const { success, warnings } = locale.get("invitations");
 
-  InvitationsManager.getInvitations(req, res).then(invitations => {
+  InvitationsManager.getInvitationsInfo(req, res).then(invitationsInfo => {
     return res.status(200).json({
       message: success.fetched,
-      invitations
+      invitationsInfo
     });
   }).catch(errors => {
     return res.status(400).json({
@@ -74,6 +110,8 @@ const useInvitationCode = (req, res) => {
 };
 
 module.exports = {
+  getInvitation,
+  getMyInvitation,
   getInvitations,
   createInvitation,
   reCreateInvitationCode,

@@ -127,7 +127,8 @@ module.exports = {
       requiredInvitationCode: `requiredInvitationCode`,
       invalidInvitationCode: `invalidInvitationCode`,
       useOwnInviteCode: `useOwnInviteCode`,
-      alredyUseInviteCode: `alredyUseInviteCode`
+      alredyUseInviteCode: `alredyUseInviteCode`,
+      notExistInvitation: `notExistInvitation`
     }
   },
 

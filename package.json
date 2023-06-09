@@ -28,7 +28,7 @@
     "currency-converter-lt": "^1.3.1"
   },
   "scripts": {
-    "start": "nodemon ."
+    "start": "node ."
   },
   "engines": {
     "node": ">=18.x"

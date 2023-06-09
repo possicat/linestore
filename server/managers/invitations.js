@@ -2,13 +2,92 @@ const Invitation = require('../models/invitation');
 const locale = require('../../locales/index');
 //
 
-const getInvitations = (req, res) => {
+function initInvitationInfo(user, invitation) {
+
+    const invitationInfo = {};
+
+    if (!user) user = { permissions: [] };
+
+    for (const [key, value] of Object.entries(invitation._doc)) {
+
+        if (key == "__v") continue;
+        if (key == "_id") {
+            invitationInfo["id"] = value;
+            continue;
+        }
+
+        if (key == "uses") invitationInfo["usesCount"] = value.length;
+
+        if (user.permissions.includes("admin")) {
+            invitationInfo[key] = value;
+            continue;
+        }
+
+        if (user.permissions.includes("agent")) {
+            if (["createdAt", "updatedAt"].includes(key)) continue;
+            invitationInfo[key] = value;
+            continue;
+        }
+
+        if (!["inviterId", "code", "createdAt"].includes(key)) continue;
+
+        invitationInfo[key] = value;
+
+    }
+
+    return cardInfo;
+
+}
+
+const getInvitationInfo = (req, res) => {
 
     return new Promise(async (resolve, reject) => {
 
-        const invitations = await Invitation.find({});
+        const { success, warnings } = locale.get("invitations");
 
-        return resolve(invitations);
+        const user = req.user;
+        const inviterId = req.params.inviterId;
+
+        const invitation = await Invitation.findOne({ inviterId: inviterId });
+        if (!invitation) return reject({ invitation: warnings.notExistInvitation });
+
+        return resolve(initInvitationInfo(user, invitation));
+
+    });
+
+};
+
+const getMyInvitationInfo = (req, res) => {
+
+    return new Promise(async (resolve, reject) => {
+
+        const { success, warnings } = locale.get("invitations");
+
+        const user = req.user;
+
+        const invitation = await Invitation.findOne({ inviterId: user._id });
+        if (!invitation) return reject({ invitation: warnings.notExistInvitation });
+
+        return resolve(initInvitationInfo(user, invitation));
+
+    });
+
+};
+
+const getInvitationsInfo = (req, res) => {
+
+    return new Promise(async (resolve, reject) => {
+
+        const user = req.user;
+
+        const invitations = await Invitation.find({});
+        const invitationsInfo = [];
+
+        for (const invitation of invitations) {
+            invitationsInfo.push(user, invitation);
+        }
+
+        return resolve(invitationsInfo);
 
     });
 
@@ -85,14 +164,16 @@ const useInvitationCode = (req, res) => {
 
 };
 
-async function isValidInvitationCode (code) { // Used in register function
+async function isValidInvitationCode(code) { // Used in register function
     if (!code) return true;
     const invitation = await Invitation.findOne({ code: (typeof code == "string" && code.trim().length) ? code.trim() : null });
     if (!invitation) return false;
 }
 
 module.exports = {
-    getInvitations,
+    getInvitationInfo,
+    getMyInvitationInfo,
+    getInvitationsInfo,
     createInvitation,
     reCreateInvitationCode,
     useInvitationCode,

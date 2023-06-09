@@ -16,8 +16,8 @@ app.set('json spaces', 4);
 app.use(cors({ origin: '*' }));
 
 const limiter = rateLimit({
-  windowMs: 1000 * 60, // 1 Minute
-  max: 75, // limit each IP to 75 requests per windowMs
+  windowMs: 1000 * 30,
+  max: 30,
   message: `Too many requests, please try again later after 1 minute`
 });
 
@@ -34,13 +34,12 @@ function localization (req, res, next) {
   next();
 }
 
-
 app.use('/en', localization, router);
 app.use('/ar', localization, router);
 app.use('/', localization, router);
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true }).then(async (result) => {
+mongoose.connect(process.env.DB, { useNewUrlParser: true, useUnifiedTopology: true }).then(async () => {
   const server = app.listen(process.env.PORT, () => console.log(`App is online with port ${server.address().port}`));
 }).catch(err => console.error(err));
 
