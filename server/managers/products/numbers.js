@@ -73,10 +73,10 @@ const getNumbersProducts = (req, res) => {
             product = { ...product, price: productInfo.price, currency: productInfo.currency };
             delete productInfo.price;
             delete productInfo.currency;
-            product.metaData = { ...product.metaData, ...productInfo, available: true };
+            product.metaData = { ...product.metaData, ...productInfo };
             category.products[i] = product;
           } catch {
-            category.products[i].available = false;
+            category.products[i].metaData.available = false;
           }
         }
         if (category.products.length) products.push(category);
