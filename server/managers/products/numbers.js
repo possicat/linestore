@@ -5,6 +5,7 @@ const axios = require('axios');
 const currencyConverter = require('currency-converter-lt');
 const Coupon = require('../../models/coupon');
 const locale = require('../../../locales/index');
+const productsFile = JSON.parse(require('../../../interfaces/products.json'));
 const CC = new currencyConverter();
 const PROFIT = process.env.NUMBERS_PROFIT;
 //
@@ -16,27 +17,6 @@ const requestManager = axios.create({
     Authorization: process.env.NUMBERS_API_TOKEN
   }
 });
-
-const getNumbersProducts = (req, res) => {
-
-  return new Promise(async (resolve, reject) => {
-
-    const { success, warnings } = locale.get("products");
-
-    try {
-      const apiResponse = await requestManager.get(`guest/prices`);
-      const products = apiResponse.data;
-      const countries = Object.keys(products);
-      const services = Object.keys(products.russia);
-
-      return resolve({ services, countries });
-    } catch (err) {
-      return reject({ product: warnings.notExistProduct });
-    }
-
-  });
-
-}
 
 const getNumberProductInfo = (req, res) => {
 
@@ -71,6 +51,41 @@ const getNumberProductInfo = (req, res) => {
     } catch {
       return reject({ product: warnings.notFoundActivationNumberProduct });
     }
+  });
+
+}
+
+const getNumbersProducts = (req, res) => {
+
+  return new Promise(async (resolve, reject) => {
+
+    const { success, warnings } = locale.get("products");
+
+    try {
+      const apiResponse = await requestManager.get(`guest/prices`);
+      const prices = apiResponse.data;
+      const countries = Object.keys(prices);
+      const services = Object.keys(prices.russia);
+
+      const products = [];
+      for (const category of productsFile.numbers) {
+        for (let i=0;i<category.products.length;i++) {
+          try {
+            let product = category.products[i];
+            req.params = { service: category.name, country: product.name };
+            const productInfo = await getNumberProductInfo(req, res);
+            product = { ...product, ...productInfo };
+            category.products[i] = product;
+          } catch {}
+        }
+        products.push(category);
+      }
+
+      return resolve(products);
+    } catch (err) {
+      return reject({ product: warnings.notExistProduct });
+    }
+
   });
 
 }

@@ -1,18 +1,18 @@
 {
-  
-  "numbers": {
-    "displayImg": "https://....",
-    "router": "GET: api/products/numbers"
-  },
-  
-  "fucker": {
-    "displayImg": "https://....",
-    "router": "GET: api/products/fucker"
-  },
-  
-  "showTrade": {
-    "displayImg": "https://....",
-    "router": "GET: api/products/show-trade"
-  }
-  
+  "numbers": [
+    {
+      "name": "Whatsapp",
+      "thumbnail": "photo.ofwhatsapp.com",
+      "products": [
+        {
+          "name": "Yemen",
+          "thumbnail": "yemen.flags.com",
+          "endpoint": "linestore.com/buy?app=whatsapp&country=ye",
+          "metaData": {
+            "maxTime": "15m"
+          }
+        }
+      ]
+    }
+  ]
 }
