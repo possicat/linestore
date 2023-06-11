@@ -5,7 +5,8 @@ const axios = require('axios');
 const currencyConverter = require('currency-converter-lt');
 const Coupon = require('../../models/coupon');
 const locale = require('../../../locales/index');
-const productsFile = JSON.parse(require('../../../interfaces/products.json'));
+const { readFileSync } = require('node:fs');
+const productsFile = JSON.parse(readFileSync('./././products.json'));
 const CC = new currencyConverter();
 const PROFIT = process.env.NUMBERS_PROFIT;
 //
@@ -62,11 +63,6 @@ const getNumbersProducts = (req, res) => {
     const { success, warnings } = locale.get("products");
 
     try {
-      const apiResponse = await requestManager.get(`guest/prices`);
-      const prices = apiResponse.data;
-      const countries = Object.keys(prices);
-      const services = Object.keys(prices.russia);
-
       const products = [];
       for (const category of productsFile.numbers) {
         for (let i=0;i<category.products.length;i++) {
@@ -74,11 +70,16 @@ const getNumbersProducts = (req, res) => {
             let product = category.products[i];
             req.params = { service: category.name, country: product.name };
             const productInfo = await getNumberProductInfo(req, res);
-            product = { ...product, ...productInfo };
+            product = { ...product, price: productInfo.price, currency: productInfo.currency };
+            delete productInfo.price;
+            delete productInfo.currency;
+            product.metaData = { ...product.metaData, ...productInfo, available: true };
             category.products[i] = product;
-          } catch {}
+          } catch {
+            category.products[i].available = false;
+          }
         }
-        products.push(category);
+        if (category.products.length) products.push(category);
       }
 
       return resolve(products);
