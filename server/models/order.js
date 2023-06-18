@@ -20,28 +20,31 @@ const orderSchema = new mongoose.Schema({
     trim: true,
     default: "PENDING"
   },
-  orderDetails: Object
+  products: {
+    type: Array,
+    required: true
+  }
 }, { timestamps: true });
 
 // -----
 
 orderSchema.statics.getOrderById = async (id = '', model) => {
-  
+
   if (!ObjectId.isValid(id.trim())) return null;
-  
+
   const order = await model.findOne({ _id: id });
   if (!order) return null;
-  
+
   return order;
-  
+
 }
 
 orderSchema.statics.handleErrors = (error) => {
-  
+
   const { success, warnings } = locale.get("auth");
-  
+
   const errors = {};
-  
+
   if (error.code === 11000) {
     const key = Object.keys(error.keyValue)[0];
     errors[key] = warnings.alreadyTaken(key);
@@ -53,9 +56,9 @@ orderSchema.statics.handleErrors = (error) => {
   } else {
     errors.server = warnings.server;
   }
-  
+
   return errors;
-  
+
 }
 
 

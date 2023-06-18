@@ -10,21 +10,26 @@ const couponSchema = new mongoose.Schema({
   },
   ownerId: {
     type: ObjectId,
-    required: true,
+    required: [true, `requiredOwnerId`],
     unique: true
   },
   code: {
     type: String,
-    required: true,
+    required: [true, `requiredCouponCode`],
     unique: true,
     trim: true,
-    maxlength: [32, `tooLongCode`]
+    maxlength: [32, `tooLongCouponCode`]
   },
   discount: {
     type: Number,
-    required: true,
-    min: 1,
-    max: 100
+    required: [true, `requiredCouponDiscount`],
+    min: [1, `invalidCouponDiscount`],
+    max: [100, `invalidCouponDiscount`]
+  },
+  timeout: {
+    type: Number, // Using ms
+    required: [true, `requiredCouponTimeout`],
+    validate: [Number.isInteger, `invalidCouponTimeout`]
   },
   uses: {
     type: [ObjectId],
@@ -43,6 +48,10 @@ couponSchema.statics.getCouponByOwnerId = async (id = '', model) => {
 
   return coupon;
 
+}
+
+couponSchema.statics.isExpired = (coupon) => {
+  return ((coupon.createdAt + coupon.timeout) > Date.now());
 }
 
 couponSchema.statics.handleErrors = (error) => {

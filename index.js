@@ -16,8 +16,8 @@ app.set('json spaces', 4);
 app.use(cors({ origin: '*' }));
 
 const limiter = rateLimit({
-  windowMs: 1000 * 30,
-  max: 30,
+  windowMs: 1000 * 60,
+  max: 71,
   message: `Too many requests, please try again later after 1 minute`
 });
 

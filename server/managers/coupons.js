@@ -22,19 +22,20 @@ const createCoupon = (req, res) => {
         const { success, warnings } = locale.get("coupons");
 
         const user = req.user;
-        const { ownerId, code, discount } = req.body;
+        const { ownerId, code, discount, timeout } = req.body;
 
-        if (typeof ownerId != "string" || !ownerId.trim().length) return reject({ ownerId: warnings.requiredOwnerId });
+        if (typeof ownerId != "string" || !ownerId.trim().length) return reject({ ownerId: warnings.requiredCouponOwnerId });
 
         const owner = await User.getUserById(ownerId, User);
-        if (!owner) return reject({ owner: warnings.invalidOwnerId });
+        if (!owner) return reject({ owner: warnings.invalidCouponOwnerId });
 
         try {
             const coupon = await Coupon.create({
                 createdBy: user._id,
                 ownerId: owner._id,
                 code,
-                discount
+                discount,
+                timeout
             });
 
             return resolve(coupon);
@@ -81,6 +82,10 @@ const checkCoupon = (req, res) => {
 
         const coupon = await Coupon.findOne({ code });
         if (!coupon) return reject({ coupon: warnings.invalidCouponCode });
+        if (Coupon.isExpired(coupon)) {
+            await Coupon.deleteOne({ _id: coupon._id });
+            return reject({ coupon: warnings.invalidCouponCode });
+        }
 
         return resolve(coupon);
 

@@ -106,8 +106,8 @@ module.exports = {
     warnings: {
       general: generalError,
       server: generalServerError,
-      requiredOwnerId: `requiredOwnerId`,
-      invalidOwnerId: `invalidOwnerId`,
+      requiredCouponOwnerId: `requiredCouponOwnerId`,
+      invalidCouponOwnerId: `invalidCouponOwnerId`,
       requiredCouponCode: `requiredCouponCode`,
       requiredNewCouponCode: `requiredNewCouponCode`,
       invalidCouponCode: `invalidCouponCode`
@@ -157,7 +157,9 @@ module.exports = {
       server: generalServerError,
       notExistProduct: `notExistProduct`,
       notFoundActivationNumberProduct: `notFoundActivationNumberProduct`,
-      notEnoughBalance: `notEnoughBalance`
+      notEnoughBalance: `notEnoughBalance`,
+      notEnoughQuantity: `notEnoughQuantity`,
+      mustBeIndexNumberIndex: `mustBeIndexNumberIndex`
     }
   }
 };

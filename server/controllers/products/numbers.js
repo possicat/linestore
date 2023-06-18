@@ -78,10 +78,10 @@ const cancelOrder = (req, res) => {
 
   const { success, warnings } = locale.get("products");
   
-  NumbersManager.cancelNumberOrder(req, res).then(orderId => {
+  NumbersManager.cancelNumberOrder(req, res).then(cancelInfo => {
     return res.status(200).json({
       message: success.canceled,
-      orderId
+      cancelInfo
     });
   }).catch(errors => {
     return res.status(400).json({

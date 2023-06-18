@@ -54,7 +54,7 @@ const getNumberProductInfo = (req, res) => {
     }
   });
 
-}
+};
 
 const getNumbersProducts = (req, res) => {
 
@@ -65,7 +65,7 @@ const getNumbersProducts = (req, res) => {
     try {
       const products = [];
       for (const category of productsFile.numbers) {
-        for (let i=0;i<category.products.length;i++) {
+        for (let i = 0; i < category.products.length; i++) {
           try {
             let product = category.products[i];
             req.params = { service: category.name, country: product.name };
@@ -89,7 +89,7 @@ const getNumbersProducts = (req, res) => {
 
   });
 
-}
+};
 
 const orderNumberProduct = (req, res) => {
 
@@ -98,30 +98,44 @@ const orderNumberProduct = (req, res) => {
     const { success, warnings } = locale.get("products");
 
     const user = req.user;
-    const { couponCode } = req.query;
+    const { count, couponCode } = req.query;
 
     const product = await getNumberProductInfo(req, res).catch(err => false);
     if (!product) return reject({ product: warnings.notFoundActivationNumberProduct });
 
+    if (typeof count != "number") count = 1;
+    else count = parseInt(count);
+
+    if (product.quantity < count) return reject({ quantity: warnings.notEnoughQuantity });
+
+    product.price *= count;
+
     if (user.balance < product.price) return reject({ user: warnings.notEnoughBalance });
 
-    const coupon = await Coupon.findOne({ code: couponCode || '' });
+    const coupon = await Coupon.findOne({ code: (typeof couponCode == "string") ? couponCode.trim() : null });
+    if (coupon && Coupon.isExpired(coupon)) {
+      await Coupon.deleteOne({ _id: coupon._id });
+      return reject({ coupon: warnings.invalidCouponCode });
+    }
+    
     if (coupon) {
-      const discountValue = product.price / (product.price / coupon.discount);
+      const discountValue = product.price * (coupon.discount / 100);
       product.price -= discountValue;
     }
+
+    const perPrice = product.price / count;
 
     user.balance -= product.price;
     await user.save({ validateBeforeSave: false });
 
-    try {
-      const apiResponse = await requestManager.get(`user/buy/activation/${product.country.toLowerCase()}/any/${product.service.toLowerCase()}`);
-      const buyInfo = apiResponse.data;
+    const products = [];
+    const faileds = [];
+    for (let i = 1; i <= count; i++) {
+      try {
+        const apiResponse = await requestManager.get(`user/buy/activation/${product.country.toLowerCase()}/any/${product.service.toLowerCase()}`);
+        const buyInfo = apiResponse.data;
 
-      const order = await Order.create({
-        orderType: product.type,
-        orderedBy: user._id,
-        orderDetails: {
+        products.push({
           id: buyInfo.id,
           phoneNumber: buyInfo.phone,
           service: buyInfo.product,
@@ -129,29 +143,39 @@ const orderNumberProduct = (req, res) => {
           createdAt: buyInfo.created_at,
           expiredAt: buyInfo.expires,
           phoneNumberSms: buyInfo.sms,
-          price: product.price
-        }
-      });
+          price: perPrice,
+          status: "PENDING"
+        });
 
-      user.purchases.push(order._id);
-      await user.save({ validateBeforeSave: false });
+      } catch (err) {
+        user.balance += perPrice;
+        await user.save({ validateBeforeSave: false });
 
-      return resolve({
-        orderId: order.id,
-        ...order.orderDetails,
-        userBalance: user.balance
-      });
-
-    } catch (err) {
-      user.balance += product.price;
-      await user.save({ validateBeforeSave: false });
-
-      return reject({ server: warnings.server }); // TODO: Mange 5sim errors
+        faileds.push(err);
+      }
     }
+
+    if (!product.length) return reject({ server: warnings.server }); // TODO: Mange 5sim errors
+
+    const order = await Order.create({
+      orderType: product.type,
+      orderedBy: user._id,
+      products
+    });
+
+    user.purchases.push(order._id);
+    await user.save({ validateBeforeSave: false });
+
+    return resolve({
+      orderId: order.id,
+      success: products.length,
+      faileds: faileds.length,
+      userBalance: user.balance
+    });
 
   });
 
-}
+};
 
 const checkNumberOrder = (req, res) => { // GET SMS
 
@@ -161,6 +185,9 @@ const checkNumberOrder = (req, res) => { // GET SMS
 
     const user = req.user;
     const id = req.params.order_id;
+    const numberIndex = req.params.number_index;
+
+    if (!Number.isInteger(numberIndex) || numberIndex < 0) return reject({ numberIndex: warnings.mustBeIndexNumberIndex });
 
     const order = await Order.getOrderById(id.trim());
 
@@ -168,14 +195,18 @@ const checkNumberOrder = (req, res) => { // GET SMS
     if (order.orderType.toLowerCase().trim() != "activation number") return reject({ order: warnings.notExistOrder });
 
     if (order.orderedBy.toString() != user._id.toString()) return reject({ order: warnings.notYoursOrder });
-    if (order.status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
+
+    if (!order.products[numberIndex]) return reject({ product: warnings.notExistProduct });
+    if (order.products[numberIndex].status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
 
     try {
-      const apiResponse = await requestManager.get(`user/check/${order.orderDetails.id}`);
+      const apiResponse = await requestManager.get(`user/check/${order.products[numberIndex].id}`);
       const checkInfo = apiResponse.data;
 
-      order.status = checkInfo.status.toUpperCase();
-      order.orderDetails.phoneNumberSms = checkInfo.phoneNumberSms;
+      order.products[numberIndex].status = checkInfo.status.toUpperCase();
+      order.products[numberIndex].phoneNumberSms = checkInfo.phoneNumberSms;
+      if (order.products.every(p => p.status != "PENDING")) order.status = "FINISHED";
+
       await order.save({ validateBeforeSave: false });
 
       const invitation = await Invitation.getInvitationByInviterId(user.invitedBy);
@@ -185,11 +216,12 @@ const checkNumberOrder = (req, res) => { // GET SMS
         await inviter.save({ validateBeforeSave: false });
       }
 
-      requestManager.get(`user/finish/${order.orderDetails.id}`).catch(err => 400);
+      requestManager.get(`user/finish/${order.products[numberIndex].id}`).catch(err => 400);
 
       return resolve({
         orderId: order.id,
         status: order.status,
+        numberIndex,
         phoneNumberSms: checkInfo.phoneNumberSms
       });
 
@@ -209,6 +241,7 @@ const cancelNumberOrder = (req, res) => {
 
     const user = req.user;
     const id = req.params.order_id;
+    const numberIndex = req.params.number_index;
 
     const order = await Order.getOrderById(id.trim());
 
@@ -216,23 +249,28 @@ const cancelNumberOrder = (req, res) => {
     if (order.orderType.toLowerCase().trim() != "activation number") return reject({ order: warnings.notExistOrder });
 
     if (order.orderedBy.toString() != user._id.toString()) return reject({ order: warnings.notYoursOrder });
-    if (order.status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
+
+    if (!order.products[numberIndex]) return reject({ product: warnings.notExistProduct });
+    if (order.products[numberIndex].status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
 
     try {
-      const apiResponse = await requestManager.get(`user/cancel/${order.orderDetails.id}`);
+      const apiResponse = await requestManager.get(`user/cancel/${order.products[numberIndex].id}`);
       const cancelInfo = apiResponse.data;
 
-      user.balance += order.orderDetails.price;
+      user.balance += order.products[numberIndex].price;
       await user.save({ validateBeforeSave: false });
 
       const orderId = order._id;
       user.purchases.filter(e => e.toString() != orderId.toString());
+      order.products[numberIndex].status = "CANCELED";
 
       await user.save({ validateBeforeSave: false });
-      await Order.deleteOne({ _id: order._id });
+      if (order.products.every(p => p.status == "CANCELED")) await Order.deleteOne({ _id: orderId });
+      else await order.save();
 
       return resolve({
         orderId,
+        numberIndex,
         userBalance: user.balance
       });
     } catch {
@@ -241,7 +279,7 @@ const cancelNumberOrder = (req, res) => {
 
   });
 
-}
+};
 
 module.exports = {
   getNumbersProducts,

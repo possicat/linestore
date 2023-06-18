@@ -7,7 +7,7 @@ router.get('/', numbersController.getProducts);
 router.get('/:service/:country', numbersController.getProduct);
 router.use(authMiddlewares.isLogined, authMiddlewares.isVerified);
 router.post('/order/:service/:country', numbersController.orderProduct);
-router.post('/check/:order_id', numbersController.checkOrder);
-router.post('/cancel/:order_id', numbersController.cancelOrder);
+router.post('/check/:order_id/:number_index', numbersController.checkOrder);
+router.post('/cancel/:order_id/:number_index', numbersController.cancelOrder);
 
 module.exports = router;
