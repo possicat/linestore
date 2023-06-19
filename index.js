@@ -12,8 +12,8 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/interfaces/'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.set('json spaces', 4);
-app.use(cors({ origin: '*' }));
+app.set('json spaces', 2);
+app.use(cors());
 
 const limiter = rateLimit({
   windowMs: 1000 * 60,
