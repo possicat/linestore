@@ -69,27 +69,15 @@ const getNumbersProducts = (req, res) => {
       const lang = locale.getLang();
       numbersSection.name = numbersSection.name[lang];
 
+      let service, country;
       for (const product of numbersSection.products) {
-        req.params.service = product.name.en;
+        service = product.name.en.toLowerCase();
         product.name = product.name[lang];
         for (let i=0;i<product.subProducts.length;i++) {
           const subProduct = product.subProducts[i];
-          req.params.country = subProduct.name.en;
+          country = subProduct.name.en.toLowerCase();
           subProduct.name = subProduct.name[lang];
-          try {
-            const productInfo = await getNumberProductInfo(req, res);
-            subProduct.price = productInfo.price;
-            subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${productInfo.service.toLowerCase()}/${productInfo.country.toLowerCase()}`;
-            delete productInfo.price;
-
-            subProduct.metaData = {
-              ...subProduct.metaData,
-              ...productInfo
-            };
-          } catch (err) {
-            subProduct.metaData.available = false;
-          }
-          product.subProducts[i] = subProduct;
+          subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${service}/${country}`; 
         }
         products.push(product);
       }
@@ -101,7 +89,6 @@ const getNumbersProducts = (req, res) => {
 
       return resolve(section);
     } catch (err) {
-      console.log(err);
       return reject({ product: warnings.notExistProduct });
     }
 
@@ -120,6 +107,17 @@ const orderNumberProduct = (req, res) => {
 
     const product = await getNumberProductInfo(req, res).catch(err => false);
     if (!product) return reject({ product: warnings.notFoundActivationNumberProduct });
+    
+    const productsFile = JSON.parse(readFileSync('./././products.json'));
+    const numbersSection = productsFile.sections.find(e => e.name.en.toLowerCase().includes("number"));
+    let selectedProduct = numbersSection.products.find(e => e.name.en.toLowerCase() == product.service.toLowerCase());
+    
+    if (!selectedProduct) return reject({ product: warnings.notFoundActivationNumberProduct });
+    selectedProduct = selectedProduct.subProducts.find(e => e.name.en.toLowerCase() == product.country.toLowerCase());
+    if (!selectedProduct) return reject({ product: warnings.notFoundActivationNumberProduct });
+    
+    product.price = Math.max(selectedProduct.price, product.price);
+    
 
     if (typeof count != "number") count = 1;
     else count = parseInt(count);
