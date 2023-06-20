@@ -13,18 +13,19 @@ const isLogined = async (req, res, next) => {
     if (typeof userToken != "string" || !userToken.trim().length) {
       return res.status(418).json({ 
         message: warnings.requiredAuthentication, 
+        reason: warnings.requiredAuthentication,
       });
     }
     
     return res.status(418).json({ 
       message: warnings.requiredAuthentication,
-      errors: { userToken: warnings.invalidUserToken }
+      reason: warnings.invalidUserToken
     });
   }
   
   if (user.frozen) return res.status(418).json({ 
     message: warnings.frozenAccount,
-    errors: { userToken: warnings.frozenUserToken }
+    reason: warnings.frozenUserToken
   });
   
   req.user = user; // Send The User To Second Function
@@ -39,7 +40,8 @@ const isVerified = async (req, res, next) => {
   const user = req.user;
   
   if (!user.verified) return res.status(400).json({
-    message: warnings.notVerifiedAccount
+    message: warnings.notVerifiedAccount,
+    reason: warnings.notVerifiedAccount
   });
   
   next();
@@ -53,7 +55,8 @@ const isAdmin = async (req, res, next) => {
   const user = req.user;
   
   if (!user.permissions.includes("admin")) return res.status(400).json({
-    message: warnings.notHasAdminPermissions
+    message: warnings.notHasAdminPermissions,
+    reason: warnings.notHasAdminPermissions
   });
   
   next();
@@ -67,7 +70,8 @@ const isAgent = async (req, res, next) => {
   const user = req.user;
   
   if (!user.permissions.includes("agent") && !user.permissions.includes("admin")) return res.status(400).json({
-    message: warnings.notHasAgentPermissions
+    message: warnings.notHasAgentPermissions,
+    reason: warnings.notHasAgentPermissions
   });
   
   next();
@@ -82,13 +86,13 @@ const passwordRequired = async (req, res, next) => {
   const { password } = req.body;
   
   if (typeof password  != "string" || !password.trim().length) return res.status(400).json({
-    message: warnings.requiredPasswordMsg,
-    errors: { password: warnings.requiredPassword }
+    message: warnings.general,
+    reason: warnings.requiredPassword
   });
   
   if (!(await User.isCorrectPassword(password, user.password))) return res.status(400).json({
     message: warnings.general,
-    errors: { password: warnings.incorrectPassword }
+    reason: warnings.incorrectPassword
   });
   
   next();

@@ -64,25 +64,40 @@ const getNumbersProducts = (req, res) => {
 
     try {
       const products = [];
-      for (const category of productsFile.numbers) {
-        for (let i = 0; i < category.products.length; i++) {
+      const numbersSection = productsFile.sections.find(e => e.name.en.toLowerCase().includes("number"));
+
+      const lang = locale.getLang();
+      numbersSection.name = numbersSection.name[lang];
+
+      for (const product of numbersSection.products) {
+        product.name = product.name[lang];
+        for (let i=0;i<product.subProducts.length;i++) {
+          const subProduct = product.subProducts[i];
+          subProduct.name = subProduct.name[lang];
           try {
-            let product = category.products[i];
-            req.params = { service: category.name, country: product.name };
             const productInfo = await getNumberProductInfo(req, res);
-            product = { ...product, price: productInfo.price, currency: productInfo.currency };
+            subProduct.price = productInfo.price;
+            subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${productInfo.service}/${productInfo.country}`;
             delete productInfo.price;
-            delete productInfo.currency;
-            product.metaData = { ...product.metaData, ...productInfo };
-            category.products[i] = product;
+
+            subProduct.metaData = {
+              ...subProduct.metaData,
+              ...productInfo
+            };
           } catch {
-            category.products[i].metaData.available = false;
+            subProduct.metaData.available = false;
           }
+          product.subProducts[i] = subProduct;
         }
-        if (category.products.length) products.push(category);
+        product.push(product);
       }
 
-      return resolve(products);
+      const section = {
+        name: numbersSection.name,
+        products
+      };
+
+      return resolve(section);
     } catch (err) {
       return reject({ product: warnings.notExistProduct });
     }

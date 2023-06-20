@@ -35,7 +35,6 @@ module.exports = {
       notVerifiedAccount: `notVerifiedAccount`,
       notHasAdminPermissions: `notHasAdminPermissions`,
       notHasAgentPermissions: `notHasAgentPermissions`,
-      requiredPasswordMsg: `requiredPasswordMsg`,
       invalidInvitationCode: `invalidInvitationCode`
     }
   },

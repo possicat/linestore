@@ -7,7 +7,7 @@ const NumbersManager = require('../../managers/products/numbers');
 router.get('/', async (req, res) => {
     res.status(200).json({
         message: `Product(s) have been successfully fetched.`,
-        products: {
+        sections: {
             numbers: await NumbersManager.getNumbersProducts(req, res)
         }
     });

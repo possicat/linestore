@@ -6,10 +6,10 @@ const getProducts = (req, res) => {
 
   const { success, warnings } = locale.get("products");
 
-  NumbersManager.getNumbersProducts(req, res).then(products => {
+  NumbersManager.getNumbersProducts(req, res).then(section => {
     return res.status(200).json({
       message: success.fetched,
-      products
+      section
     });
   }).catch(errors => {
     return res.status(400).json({
