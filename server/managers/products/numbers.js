@@ -6,7 +6,6 @@ const currencyConverter = require('currency-converter-lt');
 const Coupon = require('../../models/coupon');
 const locale = require('../../../locales/index');
 const { readFileSync } = require('node:fs');
-const productsFile = JSON.parse(readFileSync('./././products.json'));
 const CC = new currencyConverter();
 const PROFIT = process.env.NUMBERS_PROFIT;
 //
@@ -62,7 +61,8 @@ const getNumbersProducts = (req, res) => {
 
     const { success, warnings } = locale.get("products");
 
-    try {
+    try { 
+      const productsFile = JSON.parse(readFileSync('./././products.json'));  
       const products = [];
       const numbersSection = productsFile.sections.find(e => e.name.en.toLowerCase().includes("number"));
 
@@ -70,26 +70,28 @@ const getNumbersProducts = (req, res) => {
       numbersSection.name = numbersSection.name[lang];
 
       for (const product of numbersSection.products) {
+        req.params.service = product.name.en;
         product.name = product.name[lang];
         for (let i=0;i<product.subProducts.length;i++) {
           const subProduct = product.subProducts[i];
+          req.params.country = subProduct.name.en;
           subProduct.name = subProduct.name[lang];
           try {
             const productInfo = await getNumberProductInfo(req, res);
             subProduct.price = productInfo.price;
-            subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${productInfo.service}/${productInfo.country}`;
+            subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${productInfo.service.toLowerCase()}/${productInfo.country.toLowerCase()}`;
             delete productInfo.price;
 
             subProduct.metaData = {
               ...subProduct.metaData,
               ...productInfo
             };
-          } catch {
+          } catch (err) {
             subProduct.metaData.available = false;
           }
           product.subProducts[i] = subProduct;
         }
-        product.push(product);
+        products.push(product);
       }
 
       const section = {
@@ -99,6 +101,7 @@ const getNumbersProducts = (req, res) => {
 
       return resolve(section);
     } catch (err) {
+      console.log(err);
       return reject({ product: warnings.notExistProduct });
     }
 
