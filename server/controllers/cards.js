@@ -98,7 +98,8 @@ const chargeCard = (req, res) => {
   CardsManager.chargeCardToAccount(req, res).then(chargeInfo => {
     return res.status(200).json({
       message: success.charged(chargeInfo),
-      chargedUser: chargeInfo.user
+      chargedUser: chargeInfo.user,
+      userBalance: chargeInfo.userBalance
     });
   }).catch(errors => {
     return res.status(400).json({

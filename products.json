@@ -1,5 +1,37 @@
 {
-  "slider": [],
+  "slider": [
+    {
+      "thumbnail": {
+        "en": "https://images.vexels.com/content/194698/preview/shop-online-slider-template-4f2c60.png"
+      },
+      "alt": "s-1"
+    },
+    {
+      "thumbnail": {
+        "en": "https://i.pinimg.com/736x/c0/c0/68/c0c0688a33511ddf927c2e9f2af478ca.jpg"
+      },
+      "alt": "s-2"
+    },
+    {
+      "thumbnail": {
+        "en": "https://img.freepik.com/premium-vector/modern-sale-banner-website-slider-template-design_54925-46.jpg?w=2000"
+      },
+      "alt": "s-3"
+    }
+  ],
+  "news": [
+    {
+      "id": 1,
+      "title": {
+        "en": "Welome to our app.",
+        "ar": "مرحبا بكم في تطبيقنا."
+      },
+      "message": {
+        "en": "20% Off discount",
+        "ar": "تخفيضات كبرى تصل الى 20%."
+      }
+    }
+  ],
   
   "sections": [
     {
@@ -21,7 +53,10 @@
                 "ar": "امريكا"
               },
               "thumbnail": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/1200px-Flag_of_the_United_States.svg.png",
-              "metaData": {},
+              "metaData": {
+                "isNew": true,
+                "discount": 0.3
+              },
               "endpoint": "https://hakimi.glitch.me/ar/api/products/numbers/order/whatsapp/usa",
               "price": 0.89
             },

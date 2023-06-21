@@ -67,16 +67,16 @@ const getNumbersProducts = (req, res) => {
       const numbersSection = productsFile.sections.find(e => e.name.en.toLowerCase().includes("number"));
 
       const lang = locale.getLang();
-      numbersSection.name = numbersSection.name[lang];
+      numbersSection.name = numbersSection.name[lang] || numbersSection.name["en"];
 
       let service, country;
       for (const product of numbersSection.products) {
         service = product.name.en.toLowerCase();
-        product.name = product.name[lang];
+        product.name = product.name[lang] || product.name["en"];
         for (let i=0;i<product.subProducts.length;i++) {
           const subProduct = product.subProducts[i];
           country = subProduct.name.en.toLowerCase();
-          subProduct.name = subProduct.name[lang];
+          subProduct.name = subProduct.name[lang] || subProduct.name["en"];
           subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${service}/${country}`; 
         }
         products.push(product);
