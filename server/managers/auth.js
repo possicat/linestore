@@ -137,7 +137,7 @@ const forgotAccountPassword = (req, res) => {
     
     const { success, warnings } = locale.get("auth");
     
-    const { email } = req.body;
+    const { email, redirectUrl } = req.body;
     
     if (typeof email != "string" || !email.trim().length) return reject({ email: warnings.requiredEmail });
     
@@ -148,11 +148,15 @@ const forgotAccountPassword = (req, res) => {
     const resetData = { email: user.email, password: user.password };
     const resetToken = jwt.sign(resetData, process.env.RESET_PASSWORD_SECRET, { expiresIn: "15m" });
     
+    let link;
+    if (typeof redirectUrl == "string") link = `${redirectUrl}?token=${resetToken}`;
+    else link = `${process.env.HOST}/api/auth/reset-password?token=${resetToken}`;
+    
     Mailer.setMessage({
       template: "reset-password",
       title: "Reset Password",
       content: {
-        link: `${process.env.HOST}/api/auth/reset-password?token=${resetToken}`
+        link
       }
     });
     Mailer.send(user.email).catch(e => 400);

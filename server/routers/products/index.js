@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
 
     const slider = productsFile.slider;
     const news = productsFile.news;
+    const marquee = productsFile.marquee[lang] || productsFile.marquee["en"];
     for (let i=0;i<Math.max(slider.length, news.length);i++) {
         if (slider[i]) slider[i].thumbnail = slider[i].thumbnail[lang] || slider[i].thumbnail["en"];
         if (news[i]) {
@@ -20,10 +21,13 @@ router.get('/', async (req, res) => {
         }
     }
 
+
+
     res.status(200).json({
         message: `Product(s) have been successfully fetched.`,
         slider,
         news,
+        marquee,
         sections: [
             await NumbersManager.getNumbersProducts(req, res)
         ]

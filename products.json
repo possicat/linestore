@@ -32,6 +32,11 @@
       }
     }
   ],
+
+  "marquee": {
+    "en": "Welcome our clients",
+    "ar": "مرحبا بعملائنا"
+  },
   
   "sections": [
     {
@@ -45,7 +50,8 @@
             "en": "Whatsapp",
             "ar": "وتساب"
           },
-          "thumbnail": "https://e1.pxfuel.com/desktop-wallpaper/253/210/desktop-wallpaper-whatsapp-logo-png-whatsapp-logo-thumbnail.jpg",
+          "banner": "https://unpkg.com/apps-icon@1.0.0/img/whatsapp.png",
+          "thumbnail": "https://media.es.wired.com/photos/6325168c64fe55a038bdcb0c/1:1/w_2501,h_2501,c_limit/WhatsApp_Logo_2-1.jpeg",
           "subProducts": [
             {
               "name": {
@@ -127,7 +133,7 @@
                 "en": "Turkey",
                 "ar": "تركيا"
               },
-              "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg",
+              "thumbnail": "https://tolerance-homes.com/storage/images/pages/qP0fv1mqZpQwoJDnLJSeaxis4WhOye64LrbNaPet.jpeg",
               "metaData": {},
               "endpoint": "https://hakimi.glitch.me/ar/api/products/numbers/order/whatsapp/turkey",
               "price": 1.24
@@ -149,7 +155,8 @@
             "en": "Telegram",
             "ar": "تيليجرام"
           },
-          "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Telegram_2019_Logo.svg/1024px-Telegram_2019_Logo.svg.png",
+          "banner": "https://unpkg.com/apps-icon@1.0.0/img/telegram.png",
+          "thumbnail": "https://i.ibb.co/wcXqFyT/IMG-20230624-190441.png",
           "subProducts": [
             {
               "name": {
@@ -230,7 +237,7 @@
                 "en": "Turkey",
                 "ar": "تركيا"
               },
-              "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg",
+              "thumbnail": "https://tolerance-homes.com/storage/images/pages/qP0fv1mqZpQwoJDnLJSeaxis4WhOye64LrbNaPet.jpeg",
               "metaData": {},
               "endpoint": "https://hakimi.glitch.me/ar/api/products/numbers/order/telegram/turkey",
               "price": 0.85
@@ -252,7 +259,8 @@
             "en": "Netflix",
             "ar": "نتفلكس"
           },
-          "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+          "banner": "https://unpkg.com/apps-icon@1.0.0/img/netflix.png",
+          "thumbnail": "https://unpkg.com/apps-icon@1.0.0/img/netflix.png",
           "subProducts": [
             {
               "name": {
@@ -333,7 +341,7 @@
                 "en": "Turkey",
                 "ar": "تركيا"
               },
-              "thumbnail": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg",
+              "thumbnail": "https://tolerance-homes.com/storage/images/pages/qP0fv1mqZpQwoJDnLJSeaxis4WhOye64LrbNaPet.jpeg",
               "metaData": {},
               "endpoint": "https://hakimi.glitch.me/ar/api/products/numbers/order/netflix/turkey",
               "price": 0.83

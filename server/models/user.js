@@ -108,7 +108,7 @@ userSchema.pre("save", async function (next) {
 
 // -----
 
-userSchema.statics.createToken = ({ email, password } = {}, exp = "1d") => {
+userSchema.statics.createToken = ({ email, password } = {}, exp = "3d") => {
   
   const data = { email: email.toLowerCase().trim(), password: password.trim() };
   const token = jwt.sign(data, process.env.LOGIN_SECRET, {

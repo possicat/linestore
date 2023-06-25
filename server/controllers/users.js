@@ -78,9 +78,10 @@ const changeUserPassword = (req, res) => {
   
   const { success, warnings } = locale.get("users");
   
-  UsersManager.changeUserAccountPassword(req, res).then(() => {
+  UsersManager.changeUserAccountPassword(req, res).then(userToken => {
     return res.status(200).json({
-      message: success.changedPassword
+      message: success.changedPassword,
+      userToken
     });
   }).catch(errors => {
     return res.status(400).json({
