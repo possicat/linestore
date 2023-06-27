@@ -76,11 +76,12 @@ const verificationAccount = async (req, res) => {
     const { success, warnings } = locale.get("auth");
     
     const user = req.user;
+    const { redirectUrl } = req.body;
     
     if (user.verified) return reject({ verify: warnings.alreadyVerified });
     
     const verificationCode = generateUniqueId({ length: 6, useLetters: false }).toString();
-    const verificationData = { email: user.email, verificationCode };
+    const verificationData = { email: user.email, verificationCode, redirectUrl };
     const verificationToken = jwt.sign(verificationData, process.env.VERIFY_SECRET, { expiresIn: "15m" });
     
     Mailer.setMessage({
@@ -120,7 +121,7 @@ const verifyAccount = (req, res) => {
         user.verified = true;
         await user.save({ validateBeforeSave: false });
         
-        return resolve(true);
+        return resolve(decodedData.redirectUrl);
       
       } catch {
         return reject({ verificationToken: warnings.invalidVerificationToken });
@@ -161,7 +162,7 @@ const forgotAccountPassword = (req, res) => {
     });
     Mailer.send(user.email).catch(e => 400);
     
-    return resolve(resetToken);
+    return resolve(user.email);
     
   });
   

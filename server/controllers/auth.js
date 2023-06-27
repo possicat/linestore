@@ -60,14 +60,17 @@ const verify = (req, res) => {
   
   const { success, warnings } = locale.get("auth");
   
-  AuthManager.verifyAccount(req, res).then(() => {
-    return res.status(200).json({ // TODO: RENDER 
+  AuthManager.verifyAccount(req, res).then(redirectUrl => {
+    if (typeof redirectUrl == "string") return res.status(200).redirect(redirectUrl);
+    return res.status(200).json({
       message: success.verify,
     });
   }).catch(errors => {
+    const reason = Object.values(errors)[0];
+    if (reason == "alreadyVerified" && typeof redirectUrl == "string") return res.status(200).redirect(redirectUrl);
     return res.status(400).json({
       message: warnings.general,
-      reason: Object.values(errors)[0]
+      reason
     });
   });
   
@@ -77,10 +80,10 @@ const forgotPassword = (req, res) => {
   
   const { success, warnings } = locale.get("auth");
   
-  AuthManager.forgotAccountPassword(req, res).then(resetToken => {
+  AuthManager.forgotAccountPassword(req, res).then(userEmail => {
     return res.status(200).json({
       message: success.forgotPassword,
-      resetToken
+      userEmail
     });
   }).catch(errors => {
     return res.status(400).json({
