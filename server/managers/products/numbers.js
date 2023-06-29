@@ -78,7 +78,10 @@ const getNumbersProducts = (req, res) => {
           const subProduct = product.subProducts[i];
           country = subProduct.name.en.toLowerCase();
           subProduct.name = subProduct.name[lang] || subProduct.name["en"];
-          subProduct.endpoint = `${process.env.HOST}/${lang}/api/products/numbers/order/${service}/${country}`; 
+          subProduct.endpoint = {
+            check: `${process.env.HOST}/${lang}/api/products/numbers/${service}/${country}`,
+            buy: `${process.env.HOST}/${lang}/api/products/numbers/order/${service}/${country}`
+          };
         }
         products.push(product);
       }
@@ -290,7 +293,7 @@ const cancelNumberOrder = (req, res) => {
     try {
       //const apiResponse = await requestManager.get(`user/cancel/${order.products[numberIndex].id}`);
       const cancelInfo = {
-        
+
       };
 
       user.balance += order.products[numberIndex].price;
