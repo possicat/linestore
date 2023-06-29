@@ -25,7 +25,8 @@ const isLogined = async (req, res, next) => {
   
   if (user.frozen) return res.status(418).json({ 
     message: warnings.frozenAccount,
-    reason: warnings.frozenUserToken
+    reason: warnings.frozenUserToken,
+    userId: user._id
   });
   
   req.user = user; // Send The User To Second Function

@@ -7,6 +7,7 @@ const Coupon = require('../../models/coupon');
 const locale = require('../../../locales/index');
 const { readFileSync } = require('node:fs');
 const CC = new currencyConverter();
+const generateUniqueId = require('generate-unique-id');
 const PROFIT = process.env.NUMBERS_PROFIT;
 //
 
@@ -43,7 +44,7 @@ const getNumberProductInfo = (req, res) => {
         service: service.trim().toUpperCase(),
         country: country.trim().toUpperCase(),
         quantity: product.Qty,
-        price: Number(newProductPrice.toFixed(2)),
+        price: Number(newProductPrice),
         currency: `USD`
       };
 
@@ -119,7 +120,7 @@ const orderNumberProduct = (req, res) => {
     product.price = Math.max(selectedProduct.price, product.price);
     
 
-    if (typeof count != "number") count = 1;
+    if (typeof count != "number" || count <= 0) count = 1;
     else count = parseInt(count);
 
     if (product.quantity < count) return reject({ quantity: warnings.notEnoughQuantity });
@@ -128,16 +129,16 @@ const orderNumberProduct = (req, res) => {
 
     if (user.balance < product.price) return reject({ user: warnings.notEnoughBalance });
 
-    const coupon = await Coupon.findOne({ code: (typeof couponCode == "string") ? couponCode.trim() : null });
-    if (coupon && Coupon.isExpired(coupon)) {
-      await Coupon.deleteOne({ _id: coupon._id });
-      return reject({ coupon: warnings.invalidCouponCode });
-    }
+    // const coupon = await Coupon.findOne({ code: (typeof couponCode == "string") ? couponCode.trim() : null });
+    // if (coupon && Coupon.isExpired(coupon)) {
+    //   await Coupon.deleteOne({ _id: coupon._id });
+    //   return reject({ coupon: warnings.invalidCouponCode });
+    // }
     
-    if (coupon) {
-      const discountValue = product.price * (coupon.discount / 100);
-      product.price -= discountValue;
-    }
+    // if (coupon) {
+    //   const discountValue = product.price * (coupon.discount / 100);
+    //   product.price -= discountValue;
+    // }
 
     const perPrice = product.price / count;
 
@@ -148,8 +149,16 @@ const orderNumberProduct = (req, res) => {
     const faileds = [];
     for (let i = 1; i <= count; i++) {
       try {
-        const apiResponse = await requestManager.get(`user/buy/activation/${product.country.toLowerCase()}/any/${product.service.toLowerCase()}`);
-        const buyInfo = apiResponse.data;
+        //const apiResponse = await requestManager.get(`user/buy/activation/${product.country.toLowerCase()}/any/${product.service.toLowerCase()}`);
+        const buyInfo = {
+          id: 512,
+          phone: "+96773" + generateUniqueId({ length: 7, useLetters: false }).toString(),
+          product: product.service,
+          country: product.country,
+          created_at: Date.now(),
+          expires: Date.now() + (1000 * 60 * 10),
+          sms: null
+        };
 
         products.push({
           id: buyInfo.id,
@@ -216,11 +225,20 @@ const checkNumberOrder = (req, res) => { // GET SMS
     if (order.products[numberIndex].status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
 
     try {
-      const apiResponse = await requestManager.get(`user/check/${order.products[numberIndex].id}`);
-      const checkInfo = apiResponse.data;
+      //const apiResponse = await requestManager.get(`user/check/${order.products[numberIndex].id}`);
+      const checkInfo = {
+        status: "FINISHED",
+        sms: [{
+          created_at: Date.now(),
+          date: new Date().getFullYear,
+          sender: order.products[numberIndex].service,
+          text: "692091 is your activation code.",
+          code: generateUniqueId({ length: 6, useLetters: false }).toString()
+        }]
+      };
 
-      order.products[numberIndex].status = checkInfo.status.toUpperCase();
-      order.products[numberIndex].phoneNumberSms = checkInfo.phoneNumberSms;
+      order.products[numberIndex].status = checkInfo.status.toUpperCase(); // FINISHED
+      order.products[numberIndex].phoneNumberSms = checkInfo.sms;
       if (order.products.every(p => p.status != "PENDING")) order.status = "FINISHED";
 
       await order.save({ validateBeforeSave: false });
@@ -238,7 +256,7 @@ const checkNumberOrder = (req, res) => { // GET SMS
         orderId: order.id,
         status: order.status,
         numberIndex,
-        phoneNumberSms: checkInfo.phoneNumberSms
+        phoneNumberSms: checkInfo.sms
       });
 
     } catch (err) {
@@ -270,8 +288,10 @@ const cancelNumberOrder = (req, res) => {
     if (order.products[numberIndex].status != "PENDING") return reject({ order: warnings.alreadyCheckedOrder });
 
     try {
-      const apiResponse = await requestManager.get(`user/cancel/${order.products[numberIndex].id}`);
-      const cancelInfo = apiResponse.data;
+      //const apiResponse = await requestManager.get(`user/cancel/${order.products[numberIndex].id}`);
+      const cancelInfo = {
+        
+      };
 
       user.balance += order.products[numberIndex].price;
       await user.save({ validateBeforeSave: false });
